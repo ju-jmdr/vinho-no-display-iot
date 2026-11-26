@@ -2,7 +2,12 @@
 
 **Objetivo:** monitorar em tempo real a **temperatura, a umidade e a luminosidade** de uma adega de vinhos com um **ESP32**, guardar o histórico no FIWARE (STH-Comet + MongoDB) e **reagir a valores fora dos limites** com alertas visuais e sonoros. A aplicação web (ASP.NET Core MVC) mostra o painel, consulta o histórico, faz os cadastros e **supervisiona as médias**, enviando o comando de alerta ao ESP32. Tudo usa a API do FIWARE no AWS Learner Lab (nenhum banco local).
 
-**Integrantes:** _(preencher: nome e RA de cada integrante)_
+**Integrantes:**
+- CAUÃ VECHINI LIMA (RA: 082250039)
+- JULIANA MEDEIROS SILVA (RA: 082240040)
+- LIVIA PEREIRA QUEIROZ (RA: 082240013)
+- LUCAS PIOVEZAN DOS SANTOS (RA: 082250040)
+- RAFAEL AKIO BUOSO WATANABLE (RA: 082240007)
 
 ## 1. Arquitetura
 
