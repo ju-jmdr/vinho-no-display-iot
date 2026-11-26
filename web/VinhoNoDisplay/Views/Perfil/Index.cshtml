@@ -1,0 +1,41 @@
+@model List<PerfilViewModel>
+@{ ViewData["Title"] = "Perfis"; }
+<div class="cabecalho">
+    <div>
+        <h1>Perfis de armazenamento</h1>
+        <p>Faixas ideais por tipo de vinho. Aplique um perfil para configurar o display.</p>
+    </div>
+    <div class="d-flex gap-2 flex-wrap">
+        <a class="btn btn-contorno" href="/Perfil/CriarSugestoes">Criar perfis sugeridos</a>
+        <a class="btn btn-ouro" href="/Perfil/Create">Novo perfil</a>
+    </div>
+</div>
+<div class="cartao"><div class="tabela-rolagem">
+@if (Model.Count == 0)
+{
+    <div class="aviso-vazio">Nenhum perfil cadastrado. Use “Criar perfis sugeridos” para começar.</div>
+}
+else
+{
+    <table class="tabela">
+        <thead><tr><th>Cód.</th><th>Nome</th><th>Temperatura</th><th>Umidade</th><th>Luz máx.</th><th></th></tr></thead>
+        <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Id</td>
+                <td>@p.Nome</td>
+                <td>@p.TempMin.ToString("0.#") – @p.TempMax.ToString("0.#") °C</td>
+                <td>@p.UmidMin.ToString("0.#") – @p.UmidMax.ToString("0.#") %</td>
+                <td>@p.LuzMax.ToString("0.#") %</td>
+                <td><div class="acoes">
+                    <button class="btn btn-ouro btn-sm-acao" onclick="aplicaPerfil(@p.Id)">Aplicar no dispositivo</button>
+                    <a class="btn btn-contorno btn-sm-acao" href="/Perfil/Edit/@p.Id">Editar</a>
+                    <a class="btn btn-contorno btn-sm-acao" href="/Perfil/Delete/@p.Id" onclick="return confirm('Excluir este perfil?')">Excluir</a>
+                </div></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+</div></div>

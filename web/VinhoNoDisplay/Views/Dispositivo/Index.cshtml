@@ -1,0 +1,57 @@
+@model DispositivoViewModel
+@{ ViewData["Title"] = "Dispositivo"; }
+<div class="cabecalho">
+    <div>
+        <h1>Dispositivo</h1>
+        <p>Configuração e testes do display, enviados como comandos FIWARE → MQTT.</p>
+    </div>
+    <span id="pillDisp" class="pilula neutra">Verificando…</span>
+</div>
+
+<div class="cartao mb-3">
+    <h2>Servidor FIWARE</h2>
+    <p class="dica">No AWS Learner Lab o IP público muda a cada sessão. Informe o IP atual da EC2: o app testa o Orion e guarda o valor (arquivo <code>fiware-host.txt</code>).</p>
+    <div class="d-flex gap-2 flex-wrap align-items-end">
+        <div style="min-width:240px"><label class="form-label" for="hostFiware">IP da EC2</label>
+            <input id="hostFiware" class="form-control" value="@VinhoNoDisplay.DAO.ConfiguracaoFiware.Host" /></div>
+        <button class="btn btn-ouro" onclick="salvaHost()">Salvar e testar</button>
+    </div>
+</div>
+
+@if (!Model.Cadastrado)
+{
+    <div class="cartao cartao-erro mb-3">
+        <h2>Dispositivo não cadastrado</h2>
+        <p>A entidade <code>urn:ngsi-ld:Vinho:001</code> não existe no Orion. Rode a pasta “1. Provisioning” da coleção do Postman (pasta <code>fiware/</code>).</p>
+    </div>
+}
+
+<div class="row g-3">
+    <div class="col-12 col-lg-7"><div class="cartao">
+        <h2>Limites de alerta</h2>
+        <p class="dica">Estes valores ficam gravados no ESP32. Fora das faixas, o display toca a animação de alerta e o LED fica vermelho.</p>
+        <div class="limite-grupo">
+            <div><label class="form-label" for="tempMin">Temp. mín. (°C)</label><input id="tempMin" type="number" step="0.1" class="form-control" value="@Model.TempMin.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)" /></div>
+            <div><label class="form-label" for="tempMax">Temp. máx. (°C)</label><input id="tempMax" type="number" step="0.1" class="form-control" value="@Model.TempMax.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)" /></div>
+            <div><label class="form-label" for="umidMin">Umid. mín. (%)</label><input id="umidMin" type="number" step="0.1" class="form-control" value="@Model.UmidMin.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)" /></div>
+            <div><label class="form-label" for="umidMax">Umid. máx. (%)</label><input id="umidMax" type="number" step="0.1" class="form-control" value="@Model.UmidMax.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)" /></div>
+            <div><label class="form-label" for="luzMax">Luz máx. (%)</label><input id="luzMax" type="number" step="0.1" class="form-control" value="@Model.LuzMax.ToString("0.0", System.Globalization.CultureInfo.InvariantCulture)" /></div>
+        </div>
+        <div class="d-flex gap-2 flex-wrap mt-3">
+            <button class="btn btn-ouro" onclick="enviaConfig()">Enviar configuração</button>
+            <button class="btn btn-vinho" onclick="testaAlerta()">Testar alerta no display</button>
+        </div>
+    </div></div>
+    <div class="col-12 col-lg-5"><div class="cartao">
+        <h2>Estado</h2>
+        <div class="estado-linha"><span>Conexão</span><span id="stOnline" class="pilula neutra">–</span></div>
+        <div class="estado-linha"><span>Última mensagem</span><span id="stUltima">–</span></div>
+        <div class="estado-linha"><span>Comando <code>config</code></span><span id="stConfig">@(string.IsNullOrEmpty(Model.StatusConfig) ? "–" : Model.StatusConfig)</span></div>
+        <div class="estado-linha"><span>Comando <code>testealerta</code></span><span id="stAlerta">@(string.IsNullOrEmpty(Model.StatusAlerta) ? "–" : Model.StatusAlerta)</span></div>
+        <p class="dica mt-3 mb-0">Dica: o botão físico do ESP32 troca a tela do display (temperatura, umidade, luz, sistema).</p>
+    </div></div>
+</div>
+
+@section Scripts {
+    <script>$(function () { atualizaStatusDispositivo(); setInterval(atualizaStatusDispositivo, 5000); });</script>
+}

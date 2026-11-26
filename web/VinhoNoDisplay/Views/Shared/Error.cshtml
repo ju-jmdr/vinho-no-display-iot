@@ -1,0 +1,7 @@
+@model ErrorViewModel
+@{ ViewData["Title"] = "Atenção"; }
+<div class="cartao cartao-erro">
+    <h2 class="titulo">Não foi possível concluir</h2>
+    <p>@Model.Mensagem</p>
+    <a class="btn btn-vinho" href="javascript:history.back()">Voltar</a>
+</div>

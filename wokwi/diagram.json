@@ -1,0 +1,235 @@
+{
+  "version": 1,
+  "author": "Vinho no Display IoT",
+  "editor": "wokwi",
+  "parts": [
+    {
+      "type": "wokwi-esp32-devkit-v1",
+      "id": "esp",
+      "top": 0,
+      "left": 0,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-dht22",
+      "id": "dht",
+      "top": -130,
+      "left": 240,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-photoresistor-sensor",
+      "id": "ldr",
+      "top": -60,
+      "left": 420,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-ssd1306",
+      "id": "oled",
+      "top": 60,
+      "left": 240,
+      "attrs": {
+        "i2cAddress": "0x3c"
+      }
+    },
+    {
+      "type": "wokwi-rgb-led",
+      "id": "rgb",
+      "top": 190,
+      "left": 400,
+      "attrs": {
+        "common": "cathode"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r1",
+      "top": 170,
+      "left": 290,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r2",
+      "top": 170,
+      "left": 320,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-resistor",
+      "id": "r3",
+      "top": 170,
+      "left": 350,
+      "rotate": 90,
+      "attrs": {
+        "value": "220"
+      }
+    },
+    {
+      "type": "wokwi-buzzer",
+      "id": "buzz",
+      "top": 260,
+      "left": 240,
+      "attrs": {
+        "volume": "0.1"
+      }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn",
+      "top": 280,
+      "left": 400,
+      "attrs": {
+        "color": "green"
+      }
+    }
+  ],
+  "connections": [
+    [
+      "esp:TX0",
+      "$serialMonitor:RX",
+      "",
+      []
+    ],
+    [
+      "esp:RX0",
+      "$serialMonitor:TX",
+      "",
+      []
+    ],
+    [
+      "esp:3V3",
+      "dht:VCC",
+      "red",
+      []
+    ],
+    [
+      "esp:GND.1",
+      "dht:GND",
+      "black",
+      []
+    ],
+    [
+      "esp:D4",
+      "dht:SDA",
+      "green",
+      []
+    ],
+    [
+      "esp:3V3",
+      "ldr:VCC",
+      "red",
+      []
+    ],
+    [
+      "esp:GND.1",
+      "ldr:GND",
+      "black",
+      []
+    ],
+    [
+      "esp:D32",
+      "ldr:AO",
+      "green",
+      []
+    ],
+    [
+      "esp:3V3",
+      "oled:VCC",
+      "red",
+      []
+    ],
+    [
+      "esp:GND.1",
+      "oled:GND",
+      "black",
+      []
+    ],
+    [
+      "esp:D21",
+      "oled:SDA",
+      "blue",
+      []
+    ],
+    [
+      "esp:D22",
+      "oled:SCL",
+      "yellow",
+      []
+    ],
+    [
+      "esp:D25",
+      "r1:1",
+      "red",
+      []
+    ],
+    [
+      "r1:2",
+      "rgb:R",
+      "red",
+      []
+    ],
+    [
+      "esp:D26",
+      "r2:1",
+      "green",
+      []
+    ],
+    [
+      "r2:2",
+      "rgb:G",
+      "green",
+      []
+    ],
+    [
+      "esp:D27",
+      "r3:1",
+      "blue",
+      []
+    ],
+    [
+      "r3:2",
+      "rgb:B",
+      "blue",
+      []
+    ],
+    [
+      "esp:GND.2",
+      "rgb:COM",
+      "black",
+      []
+    ],
+    [
+      "esp:D19",
+      "buzz:2",
+      "orange",
+      []
+    ],
+    [
+      "esp:GND.2",
+      "buzz:1",
+      "black",
+      []
+    ],
+    [
+      "esp:D15",
+      "btn:1.l",
+      "green",
+      []
+    ],
+    [
+      "esp:GND.2",
+      "btn:2.l",
+      "black",
+      []
+    ]
+  ],
+  "dependencies": {}
+}

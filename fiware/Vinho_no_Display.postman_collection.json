@@ -1,0 +1,673 @@
+{
+  "info": {
+    "name": "Vinho no Display IoT",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "COLEÇÃO COMPLETA DO VINHO NO DISPLAY — não depende de nenhuma requisição da coleção da Smart Lamp.\nSó pressupõe a stack FIWARE do professor no ar na EC2 (docker compose up -d --wait) e as portas liberadas.\n\nA CADA SESSÃO DO LEARNER LAB (o IP público muda):\n 1. Suba a EC2 e a stack. 2. Atualize a variável host desta coleção. 3. Troque o IP no sketch (ou digite  broker IP  no Serial Monitor) e na tela Dispositivo do app.\n 4. Se o ambiente é novo (sem dados): rode 0 -> 1.0 a 1.7 NESTA ORDEM, antes de ligar o ESP32/Wokwi. Se o ambiente é o mesmo de antes, basta o passo 0 e o 1.7 (conferir).\n 5. Teste com a pasta 2 (sem hardware) e confira com 3.3 e 4.x.\nNÃO rode a pasta 5 inteira (ela apaga o dispositivo)."
+  },
+  "variable": [
+    {
+      "key": "host",
+      "value": "COLE_AQUI_O_IP_DA_EC2"
+    },
+    {
+      "key": "orion",
+      "value": "1026"
+    },
+    {
+      "key": "iota",
+      "value": "4041"
+    },
+    {
+      "key": "sth",
+      "value": "8666"
+    },
+    {
+      "key": "ul",
+      "value": "7896"
+    }
+  ],
+  "item": [
+    {
+      "name": "0. Health",
+      "item": [
+        {
+          "name": "0.1 Versao do Orion",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://{{host}}:{{orion}}/version"
+          }
+        },
+        {
+          "name": "0.2 Versao do IoT Agent",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://{{host}}:{{iota}}/iot/about"
+          }
+        },
+        {
+          "name": "0.3 Versao do STH-Comet",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "http://{{host}}:{{sth}}/version"
+          }
+        }
+      ]
+    },
+    {
+      "name": "1. Provisioning",
+      "item": [
+        {
+          "name": "1.0 Ver service groups existentes (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              }
+            ],
+            "url": "http://{{host}}:{{iota}}/iot/services",
+            "description": "Se já existir um grupo com apikey TEF (criado antes, por exemplo para a Smart Lamp), NÃO rode o 1.1: o mesmo grupo atende o Vinho no Display."
+          }
+        },
+        {
+          "name": "1.1 Service Group apikey TEF (só se o 1.0 não mostrar um)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "http://{{host}}:{{iota}}/iot/services",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"services\": [\n    {\n      \"apikey\": \"TEF\",\n      \"cbroker\": \"http://orion:1026\",\n      \"entity_type\": \"Thing\",\n      \"resource\": \"/iot/d\"\n    }\n  ]\n}"
+            },
+            "description": "Cria o grupo de serviço usado pelos dispositivos MQTT (apikey TEF). Se já existir, o IoT Agent responde 409 (duplicado) e está tudo bem: siga para o 1.2."
+          }
+        },
+        {
+          "name": "1.2 Registrar dispositivo vinho001",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "http://{{host}}:{{iota}}/iot/devices",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"devices\": [\n    {\n      \"device_id\": \"vinho001\",\n      \"apikey\": \"TEF\",\n      \"entity_name\": \"urn:ngsi-ld:Vinho:001\",\n      \"entity_type\": \"Vinho\",\n      \"protocol\": \"PDI-IoTA-UltraLight\",\n      \"transport\": \"MQTT\",\n      \"commands\": [\n        {\n          \"name\": \"alerta\",\n          \"type\": \"command\"\n        },\n        {\n          \"name\": \"config\",\n          \"type\": \"command\"\n        },\n        {\n          \"name\": \"testealerta\",\n          \"type\": \"command\"\n        }\n      ],\n      \"attributes\": [\n        {\n          \"object_id\": \"t\",\n          \"name\": \"temperature\",\n          \"type\": \"Number\"\n        },\n        {\n          \"object_id\": \"h\",\n          \"name\": \"humidity\",\n          \"type\": \"Number\"\n        },\n        {\n          \"object_id\": \"l\",\n          \"name\": \"luminosity\",\n          \"type\": \"Number\"\n        },\n        {\n          \"object_id\": \"a\",\n          \"name\": \"alarm\",\n          \"type\": \"Number\"\n        },\n        {\n          \"object_id\": \"tn\",\n          \"name\": \"tempMin\",\n          \"type\": \"Number\"\n        },\n        {\n          \"object_id\": \"tx\",\n          \"name\": \"tempMax\",\n          \"type\": \"Number\"\n        },\n        {\n          \"object_id\": \"hn\",\n          \"name\": \"umidMin\",\n          \"type\": \"Number\"\n        },\n        {\n          \"object_id\": \"hx\",\n          \"name\": \"umidMax\",\n          \"type\": \"Number\"\n        },\n        {\n          \"object_id\": \"lx\",\n          \"name\": \"luzMax\",\n          \"type\": \"Number\"\n        },\n        {\n          \"object_id\": \"u\",\n          \"name\": \"uptime\",\n          \"type\": \"Number\"\n        }\n      ]\n    }\n  ]\n}"
+            },
+            "description": "O campo apikey TEF é obrigatório: sem ele o IoT Agent não associa as leituras (que chegam com apikey TEF) a este dispositivo e cria outro, Thing:vinho001."
+          }
+        },
+        {
+          "name": "1.2b Conferir se o dispositivo está registrado (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              }
+            ],
+            "url": "http://{{host}}:{{iota}}/iot/devices",
+            "description": "GET de TODOS os dispositivos. Deve existir count 1: vinho001 com apikey TEF, entity_name urn:ngsi-ld:Vinho:001, entity_type Vinho, 10 attributes e 3 commands. Se count for 2 (aparece entity_name Thing:vinho001), rode o 5.1 até apagar todos e repita o 1.2."
+          }
+        },
+        {
+          "name": "1.3 Subscription STH - alarm",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "http://{{host}}:{{orion}}/v2/subscriptions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Historico de alarm no STH-Comet\",\n  \"subject\": {\n    \"entities\": [\n      {\n        \"idPattern\": \".*\",\n        \"type\": \"Vinho\"\n      }\n    ],\n    \"condition\": {\n      \"attrs\": [\n        \"uptime\"\n      ]\n    }\n  },\n  \"notification\": {\n    \"httpCustom\": {\n      \"url\": \"http://sth-comet:8666/notify\",\n      \"json\": {\n        \"contextResponses\": [\n          {\n            \"contextElement\": {\n              \"id\": \"${id}\",\n              \"type\": \"${type}\",\n              \"isPattern\": \"false\",\n              \"attributes\": [\n                {\n                  \"name\": \"alarm\",\n                  \"type\": \"Number\",\n                  \"value\": \"${alarm}\"\n                }\n              ]\n            },\n            \"statusCode\": {\n              \"code\": \"200\",\n              \"reasonPhrase\": \"OK\"\n            }\n          }\n        ]\n      }\n    },\n    \"attrs\": [\n      \"alarm\"\n    ]\n  }\n}"
+            },
+            "description": "Condicao = uptime (muda a cada mensagem), assim TODA leitura vai para o historico mesmo com valores iguais (o Orion nao notifica quando o valor nao muda). Orion 4.x nao aceita attrsFormat legacy: usa-se httpCustom com o corpo NGSIv1 que o STH-Comet espera. Uma subscription por atributo."
+          }
+        },
+        {
+          "name": "1.4 Subscription STH - temperature",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "http://{{host}}:{{orion}}/v2/subscriptions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Historico de temperature no STH-Comet\",\n  \"subject\": {\n    \"entities\": [\n      {\n        \"idPattern\": \".*\",\n        \"type\": \"Vinho\"\n      }\n    ],\n    \"condition\": {\n      \"attrs\": [\n        \"uptime\"\n      ]\n    }\n  },\n  \"notification\": {\n    \"httpCustom\": {\n      \"url\": \"http://sth-comet:8666/notify\",\n      \"json\": {\n        \"contextResponses\": [\n          {\n            \"contextElement\": {\n              \"id\": \"${id}\",\n              \"type\": \"${type}\",\n              \"isPattern\": \"false\",\n              \"attributes\": [\n                {\n                  \"name\": \"temperature\",\n                  \"type\": \"Number\",\n                  \"value\": \"${temperature}\"\n                }\n              ]\n            },\n            \"statusCode\": {\n              \"code\": \"200\",\n              \"reasonPhrase\": \"OK\"\n            }\n          }\n        ]\n      }\n    },\n    \"attrs\": [\n      \"temperature\"\n    ]\n  }\n}"
+            },
+            "description": "Condicao = uptime (muda a cada mensagem), assim TODA leitura vai para o historico mesmo com valores iguais (o Orion nao notifica quando o valor nao muda). Orion 4.x nao aceita attrsFormat legacy: usa-se httpCustom com o corpo NGSIv1 que o STH-Comet espera. Uma subscription por atributo."
+          }
+        },
+        {
+          "name": "1.5 Subscription STH - humidity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "http://{{host}}:{{orion}}/v2/subscriptions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Historico de humidity no STH-Comet\",\n  \"subject\": {\n    \"entities\": [\n      {\n        \"idPattern\": \".*\",\n        \"type\": \"Vinho\"\n      }\n    ],\n    \"condition\": {\n      \"attrs\": [\n        \"uptime\"\n      ]\n    }\n  },\n  \"notification\": {\n    \"httpCustom\": {\n      \"url\": \"http://sth-comet:8666/notify\",\n      \"json\": {\n        \"contextResponses\": [\n          {\n            \"contextElement\": {\n              \"id\": \"${id}\",\n              \"type\": \"${type}\",\n              \"isPattern\": \"false\",\n              \"attributes\": [\n                {\n                  \"name\": \"humidity\",\n                  \"type\": \"Number\",\n                  \"value\": \"${humidity}\"\n                }\n              ]\n            },\n            \"statusCode\": {\n              \"code\": \"200\",\n              \"reasonPhrase\": \"OK\"\n            }\n          }\n        ]\n      }\n    },\n    \"attrs\": [\n      \"humidity\"\n    ]\n  }\n}"
+            },
+            "description": "Condicao = uptime (muda a cada mensagem), assim TODA leitura vai para o historico mesmo com valores iguais (o Orion nao notifica quando o valor nao muda). Orion 4.x nao aceita attrsFormat legacy: usa-se httpCustom com o corpo NGSIv1 que o STH-Comet espera. Uma subscription por atributo."
+          }
+        },
+        {
+          "name": "1.6 Subscription STH - luminosity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "http://{{host}}:{{orion}}/v2/subscriptions",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Historico de luminosity no STH-Comet\",\n  \"subject\": {\n    \"entities\": [\n      {\n        \"idPattern\": \".*\",\n        \"type\": \"Vinho\"\n      }\n    ],\n    \"condition\": {\n      \"attrs\": [\n        \"uptime\"\n      ]\n    }\n  },\n  \"notification\": {\n    \"httpCustom\": {\n      \"url\": \"http://sth-comet:8666/notify\",\n      \"json\": {\n        \"contextResponses\": [\n          {\n            \"contextElement\": {\n              \"id\": \"${id}\",\n              \"type\": \"${type}\",\n              \"isPattern\": \"false\",\n              \"attributes\": [\n                {\n                  \"name\": \"luminosity\",\n                  \"type\": \"Number\",\n                  \"value\": \"${luminosity}\"\n                }\n              ]\n            },\n            \"statusCode\": {\n              \"code\": \"200\",\n              \"reasonPhrase\": \"OK\"\n            }\n          }\n        ]\n      }\n    },\n    \"attrs\": [\n      \"luminosity\"\n    ]\n  }\n}"
+            },
+            "description": "Condicao = uptime (muda a cada mensagem), assim TODA leitura vai para o historico mesmo com valores iguais (o Orion nao notifica quando o valor nao muda). Orion 4.x nao aceita attrsFormat legacy: usa-se httpCustom com o corpo NGSIv1 que o STH-Comet espera. Uma subscription por atributo."
+          }
+        },
+        {
+          "name": "1.7 Conferir subscriptions (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              }
+            ],
+            "url": "http://{{host}}:{{orion}}/v2/subscriptions",
+            "description": "Lista as subscriptions. Devem existir exatamente 4 (alarm, temperature, humidity, luminosity). Confira timesSent/lastSuccess/lastFailure depois de enviar uma leitura."
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Simular o dispositivo (sem hardware)",
+      "item": [
+        {
+          "name": "2.1 Leitura normal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/plain"
+              }
+            ],
+            "url": "http://{{host}}:{{ul}}/iot/d?k=TEF&i=vinho001",
+            "body": {
+              "mode": "raw",
+              "raw": "t|15.3|h|68.0|l|12|a|0|u|{{$timestamp}}",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            },
+            "description": "Exige a porta 7896 liberada no Security Group."
+          }
+        },
+        {
+          "name": "2.2 Leitura com alarme de temperatura",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/plain"
+              }
+            ],
+            "url": "http://{{host}}:{{ul}}/iot/d?k=TEF&i=vinho001",
+            "body": {
+              "mode": "raw",
+              "raw": "t|21.0|h|68.0|l|12|a|1|u|{{$timestamp}}",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "2.3 Limites do dispositivo",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/plain"
+              }
+            ],
+            "url": "http://{{host}}:{{ul}}/iot/d?k=TEF&i=vinho001",
+            "body": {
+              "mode": "raw",
+              "raw": "tn|13.0|tx|18.0|hn|60.0|hx|75.0|lx|30.0|u|{{$timestamp}}",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Comandos",
+      "item": [
+        {
+          "name": "3.1 Enviar config (tmin,tmax,umin,umax,luzmax)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "http://{{host}}:{{orion}}/v2/entities/urn:ngsi-ld:Vinho:001/attrs",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"config\": {\n    \"type\": \"command\",\n    \"value\": \"13.0,18.0,60.0,75.0,30.0\"\n  }\n}"
+            },
+            "description": "Separe por virgula: o Orion rejeita ; em valores de texto."
+          }
+        },
+        {
+          "name": "3.2 Testar alerta no display",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "http://{{host}}:{{orion}}/v2/entities/urn:ngsi-ld:Vinho:001/attrs",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"testealerta\": {\n    \"type\": \"command\",\n    \"value\": \"\"\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "3.3 Ver entidade e status dos comandos (GET)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              }
+            ],
+            "url": "http://{{host}}:{{orion}}/v2/entities/urn:ngsi-ld:Vinho:001?options=keyValues",
+            "description": "Mostra as grandezas atuais (temperature, humidity, luminosity), alarm (eco do ESP32), uptime e os limites."
+          }
+        },
+        {
+          "name": "3.4 Alerta de TEMPERATURA (alerta|1)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "http://{{host}}:{{orion}}/v2/entities/urn:ngsi-ld:Vinho:001/attrs",
+            "description": "LED vermelho piscando rápido + buzzer 1000 Hz. Com o app aberto, o supervisor corrige o estado em até ~30 s se a média estiver normal.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"alerta\": {\n    \"type\": \"command\",\n    \"value\": \"1\"\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "3.5 Alerta de UMIDADE (alerta|2)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "http://{{host}}:{{orion}}/v2/entities/urn:ngsi-ld:Vinho:001/attrs",
+            "description": "LED azul piscando + buzzer 1500 Hz.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"alerta\": {\n    \"type\": \"command\",\n    \"value\": \"2\"\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "3.6 Alerta de LUZ (alerta|4)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "http://{{host}}:{{orion}}/v2/entities/urn:ngsi-ld:Vinho:001/attrs",
+            "description": "LED amarelo piscando lento + buzzer 2200 Hz.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"alerta\": {\n    \"type\": \"command\",\n    \"value\": \"4\"\n  }\n}"
+            }
+          }
+        },
+        {
+          "name": "3.7 Normalizar (alerta|0)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "http://{{host}}:{{orion}}/v2/entities/urn:ngsi-ld:Vinho:001/attrs",
+            "description": "Desliga LED e buzzer. Máscara: 1 temp + 2 umid + 4 luz (ex.: 3 = temperatura e umidade; vale a prioridade temperatura > umidade > luz).",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"alerta\": {\n    \"type\": \"command\",\n    \"value\": \"0\"\n  }\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Historico (STH-Comet)",
+      "item": [
+        {
+          "name": "4.1 Ultimas 10 - temperature",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              }
+            ],
+            "url": "http://{{host}}:{{sth}}/STH/v1/contextEntities/type/Vinho/id/urn:ngsi-ld:Vinho:001/attributes/temperature?lastN=10"
+          }
+        },
+        {
+          "name": "4.2 Ultimas 10 - humidity",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              }
+            ],
+            "url": "http://{{host}}:{{sth}}/STH/v1/contextEntities/type/Vinho/id/urn:ngsi-ld:Vinho:001/attributes/humidity?lastN=10"
+          }
+        },
+        {
+          "name": "4.3 Ultimas 10 - luminosity",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              }
+            ],
+            "url": "http://{{host}}:{{sth}}/STH/v1/contextEntities/type/Vinho/id/urn:ngsi-ld:Vinho:001/attributes/luminosity?lastN=10"
+          }
+        },
+        {
+          "name": "4.4 Ultimas 10 - alarm",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              }
+            ],
+            "url": "http://{{host}}:{{sth}}/STH/v1/contextEntities/type/Vinho/id/urn:ngsi-ld:Vinho:001/attributes/alarm?lastN=10"
+          }
+        },
+        {
+          "name": "4.5 Paginado com data",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              }
+            ],
+            "url": "http://{{host}}:{{sth}}/STH/v1/contextEntities/type/Vinho/id/urn:ngsi-ld:Vinho:001/attributes/alarm?hLimit=100&hOffset=0&dateFrom=2026-01-01T00:00:00.000Z"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Limpeza (NAO rode a pasta inteira)",
+      "item": [
+        {
+          "name": "5.1 Apagar dispositivo",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              }
+            ],
+            "url": "http://{{host}}:{{iota}}/iot/devices/vinho001",
+            "description": "Apaga UM registro por vez. Se existir mais de um vinho001 (veja o 1.2b), rode de novo até retornar 404."
+          }
+        },
+        {
+          "name": "5.2 Apagar entidade",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              }
+            ],
+            "url": "http://{{host}}:{{orion}}/v2/entities/urn:ngsi-ld:Vinho:001"
+          }
+        },
+        {
+          "name": "5.3 Apagar entidade Thing:vinho001 (criada por engano)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "fiware-service",
+                "value": "smart"
+              },
+              {
+                "key": "fiware-servicepath",
+                "value": "/"
+              }
+            ],
+            "url": "http://{{host}}:{{orion}}/v2/entities/Thing:vinho001"
+          }
+        }
+      ],
+      "description": "Use item por item e so quando precisar recomecar: 5.1 apaga o dispositivo e 5.2 apaga a entidade. Depois rode de novo o 1.2."
+    }
+  ]
+}

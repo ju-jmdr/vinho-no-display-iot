@@ -1,0 +1,84 @@
+@{ ViewData["Title"] = "Painel"; }
+<div class="cabecalho">
+    <div>
+        <h1>Painel da adega</h1>
+        <p>Condições de guarda em tempo quase real, direto do ESP32.</p>
+    </div>
+    <div class="d-flex gap-2 align-items-center flex-wrap">
+        <span id="pillOnline" class="pilula neutra">Verificando…</span>
+        <span id="pillGarrafas" class="pilula neutra">0 garrafas</span>
+        <select id="selQuantidade" class="form-select form-select-sm" style="width:auto">
+            <option value="30">Últimas 30</option>
+            <option value="60" selected>Últimas 60</option>
+            <option value="100">Últimas 100</option>
+        </select>
+    </div>
+</div>
+
+<div id="erroPainel" class="cartao cartao-erro mb-3" style="display:none"></div>
+
+<div class="row g-3 mb-3">
+    <div class="col-12 col-sm-6 col-lg-3"><div class="cartao">
+        <div class="kpi-rotulo">Temperatura</div>
+        <div class="kpi-valor" id="kpiTemp">--<small>°C</small></div>
+        <div class="kpi-faixa" id="faixaTemp">Ideal: --</div>
+        <div class="kpi-barra"><i id="barraTemp"></i></div>
+    </div></div>
+    <div class="col-12 col-sm-6 col-lg-3"><div class="cartao">
+        <div class="kpi-rotulo">Umidade</div>
+        <div class="kpi-valor" id="kpiUmid">--<small>%</small></div>
+        <div class="kpi-faixa" id="faixaUmid">Ideal: --</div>
+        <div class="kpi-barra"><i id="barraUmid"></i></div>
+    </div></div>
+    <div class="col-12 col-sm-6 col-lg-3"><div class="cartao">
+        <div class="kpi-rotulo">Luminosidade</div>
+        <div class="kpi-valor" id="kpiLuz">--<small>%</small></div>
+        <div class="kpi-faixa" id="faixaLuz">Máximo: --</div>
+        <div class="kpi-barra"><i id="barraLuz"></i></div>
+    </div></div>
+    <div class="col-12 col-sm-6 col-lg-3"><div class="cartao">
+        <div class="kpi-rotulo">Conformidade</div>
+        <div class="kpi-valor" id="kpiConf">--<small>%</small></div>
+        <div class="kpi-faixa" id="faixaConf">Leituras dentro das faixas</div>
+        <div class="kpi-barra"><i id="barraConf"></i></div>
+    </div></div>
+</div>
+
+<div class="cartao mb-3" id="cartaoSupervisao">
+    <div class="d-flex justify-content-between flex-wrap gap-2 align-items-center">
+        <h2 class="mb-0">Supervisão <span class="dica" id="supJanela"></span></h2>
+        <span id="pillSup" class="pilula neutra">Aguardando…</span>
+    </div>
+    <div class="row g-3 mt-1">
+        <div class="col-4"><div class="kpi-rotulo">Média temperatura</div><div class="kpi-valor" id="supTemp" style="font-size:1.9rem">--</div></div>
+        <div class="col-4"><div class="kpi-rotulo">Média umidade</div><div class="kpi-valor" id="supUmid" style="font-size:1.9rem">--</div></div>
+        <div class="col-4"><div class="kpi-rotulo">Média luz</div><div class="kpi-valor" id="supLuz" style="font-size:1.9rem">--</div></div>
+    </div>
+    <div class="dica mt-2" id="supMsg"></div>
+    <div class="dica" id="supCmd"></div>
+</div>
+
+<div class="row g-3">
+    <div class="col-12 col-lg-6"><div class="cartao">
+        <h2>Temperatura <span class="dica">(faixa ideal sombreada)</span></h2>
+        <div class="grafico-caixa"><canvas id="grafTemp"></canvas></div>
+    </div></div>
+    <div class="col-12 col-lg-6"><div class="cartao">
+        <h2>Umidade <span class="dica">(faixa ideal sombreada)</span></h2>
+        <div class="grafico-caixa"><canvas id="grafUmid"></canvas></div>
+    </div></div>
+    <div class="col-12 col-lg-8"><div class="cartao">
+        <h2>Luminosidade</h2>
+        <div class="grafico-caixa pequeno"><canvas id="grafLuz"></canvas></div>
+    </div></div>
+    <div class="col-12 col-lg-4"><div class="cartao">
+        <h2>Anomalias por causa</h2>
+        <div class="grafico-caixa pequeno"><canvas id="grafAnomalias"></canvas></div>
+        <div id="semAnomalias" class="aviso-vazio" style="display:none">Nenhuma anomalia no período 🎉</div>
+    </div></div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="~/js/dashboard.js"></script>
+}

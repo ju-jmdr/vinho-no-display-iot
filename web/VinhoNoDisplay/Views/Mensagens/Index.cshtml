@@ -1,0 +1,42 @@
+@{ ViewData["Title"] = "Mensagens IoT"; }
+<div class="cabecalho">
+    <div>
+        <h1>Mensagens do dispositivo</h1>
+        <p>Histórico enviado pelo ESP32 (STH-Comet), consultado por API + AJAX.</p>
+    </div>
+</div>
+
+<div class="cartao mb-3">
+    <div class="row g-3 align-items-end">
+        <div class="col-12 col-md-3">
+            <label class="form-label" for="dataInicial">De</label>
+            <input type="datetime-local" id="dataInicial" class="form-control" />
+        </div>
+        <div class="col-12 col-md-3">
+            <label class="form-label" for="dataFinal">Até</label>
+            <input type="datetime-local" id="dataFinal" class="form-control" />
+        </div>
+        <div class="col-6 col-md-2">
+            <label class="form-label" for="maximo">Máximo</label>
+            <select id="maximo" class="form-select">
+                <option>20</option><option selected>50</option><option>100</option><option>200</option>
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <div class="form-check form-switch mb-2">
+                <input class="form-check-input" type="checkbox" id="somenteAnomalias" />
+                <label class="form-check-label dica" for="somenteAnomalias">Só anomalias</label>
+            </div>
+        </div>
+        <div class="col-12 col-md-2 d-flex gap-2">
+            <button class="btn btn-ouro flex-fill" onclick="aplicaFiltroMensagens()">Consultar</button>
+        </div>
+    </div>
+    <div class="dica mt-2">Sem datas, mostra as mensagens mais recentes (até 100). Com datas, o STH devolve a partir do início do período.</div>
+</div>
+
+<div class="cartao"><div id="gridMensagens" class="tabela-rolagem"><div class="aviso-vazio">Carregando…</div></div></div>
+
+@section Scripts {
+    <script>$(function () { aplicaFiltroMensagens(); });</script>
+}
