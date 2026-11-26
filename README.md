@@ -32,6 +32,8 @@ Padrão do FIWARE Made Simple: **a aplicação nunca fala direto com o ESP32.**
 
 ![Circuito da simulação feita no wokwi](docs/circuito-simulacao-wokwi.png)
 
+**Link para a simulação feita no Wokwi:** https://wokwi.com/projects/481163736548738049
+
 ## 3. Limites e supervisão
 
 Os limites padrão (guarda de tintos) são **12–18 °C**, **60–75 %** de umidade e luz máxima de **30 %**. Eles ficam gravados no ESP32 e são alterados pela aplicação (tela *Dispositivo* ou *Perfis → Aplicar no dispositivo*) com o comando `config`.
